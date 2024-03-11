@@ -5,10 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ProyectoProfesor.MVVM.Model {
+    /// <summary> Clase modelo sobre los detalles de un Jornada </summary>
+    /// <remarks>
+    /// Clase donde vamos a usar como molde para poder almacenar las jornadas que tiene en un dia, como el dia que se trata.
+    /// </remarks>
     public class Mes {
+        /// <summary> Atributo de la clase Mes</summary>
+        /// <remarks> El atributo tine almacenado el mes específico. </remarks>
         public string Nombre { get; set; }
+        /// <summary> Atributo de la clase Mes</summary>
+        /// <remarks> El atributo tine almacenado una lista de los dias específicos de ese mes. </remarks>
         public List<Dia> Dias { get; set; }
-
+        /// <summary> Constructor de la clase Mes</summary>
+        /// <remarks> Se instancia el més en cuestión con su nombre concreto. </remarks>
+        /// <param name="nombre">El nombre del mes</param>
         public Mes(string nombre) {
             int dias = diastotales(nombre);
             Nombre = nombre;
@@ -17,7 +27,10 @@ namespace ProyectoProfesor.MVVM.Model {
                 Dias.Add(new Dia(i));
             }
         }
-        private int diastotales(string nombre) {
+        /// <summary>Método de la clase Mes</summary>
+        /// <remarks> Se trata un método que nos devuelve la cantidad de dias que tiene un més en concreto. </remarks>
+        /// <param name="nombre">El nombre del mes</param>
+        public int diastotales(string nombre) {
             int dias = 31;
             switch (nombre) {
                 case "Febrero":
@@ -32,6 +45,9 @@ namespace ProyectoProfesor.MVVM.Model {
             }
             return dias;
         }
+        /// <summary>Método de la clase Mes</summary>
+        /// <remarks> Se trata de un numero que nos devuelve el nombre del més, dependiendo del numero que hayamos introducido. </remarks>
+        /// <param name="numeroMes">El numero del mes</param>
         public static string ObtenerNombreMes(int numeroMes) {
             switch (numeroMes) {
                 case 1: return "Enero";
@@ -49,6 +65,8 @@ namespace ProyectoProfesor.MVVM.Model {
                 default: return "mes inválido";
             }
         }
+        /// <summary>Método de la clase Mes</summary>
+        /// <remarks> Se trata un método nos crea una lista de todos los meses de un año. </remarks>
         public static List<string> ListaNombreMeses() {
             var list = new List<string>();
             for (int i = 0; i < 12; i++) {

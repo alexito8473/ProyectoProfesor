@@ -10,7 +10,7 @@
         </LinearGradientBrush>
     </ContentPage.Background>
     <ScrollView>
-        <Frame Margin="0,20,0,20"  WidthRequest="300" HeightRequest="450" CornerRadius="29" BorderColor="Transparent">
+        <Frame Margin="0,20,0,20" WidthRequest="300" HeightRequest="450" CornerRadius="29" BorderColor="Transparent">
             <Frame.Background>
                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                     <GradientStop Color="#C1FFC1" Offset="0.0" />
@@ -30,12 +30,13 @@
                 </StackLayout>
                 <StackLayout Orientation="Horizontal">
                     <Frame BorderColor="Transparent" CornerRadius="10" HorizontalOptions="FillAndExpand" Padding="0" Margin="10,0">
-                        <Entry TextColor="Black" IsPassword="True" Background="Azure" Placeholder="Contraseña" x:Name="miContraseña"/>
+                        <Entry  TextColor="Black" IsPassword="True" Background="Azure" Placeholder="Contraseña" x:Name="miContraseña"/>
                     </Frame>
                 </StackLayout>
                 <Button
         x:Name="butInicioSesion"
         Text="Iniciar sesión" 
+                    BackgroundColor="YellowGreen"
         SemanticProperties.Hint="Counts the number of times you click"
         HorizontalOptions="Fill" 
                 Clicked="butInicioSesion_ClickedAsync"/>

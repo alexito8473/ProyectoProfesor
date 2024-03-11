@@ -10,11 +10,12 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace ProyectoProfesor.MVVM.ViewModel {
-    class UsuarioViewModel {
+    public class UsuarioViewModel {
         public ObservableCollection<Jornada> ListaJornadas { get; set; } = new ObservableCollection<Jornada>();
         private Conexion conexion = new Conexion();
         public ICommand obtenerGmailAlumno { get; set; }
         public string gmail { get; set; }
+        public Usuario usuarioActual { get; set; }
         public ObservableCollection<Usuario> ListaUsuarios { get; set; } = new ObservableCollection<Usuario>();
         public UsuarioViewModel() {
             CargarUsuario();
@@ -24,12 +25,12 @@ namespace ProyectoProfesor.MVVM.ViewModel {
         private void ConstruirComandoGmailAlumno() {
             obtenerGmailAlumno = new Command(gmail => {
                 ListaJornadas.Clear();
-                Usuario usuario = ListaUsuarios.Where(t => t.Gmail.Equals(gmail)).ToList()[0];
-                for (int i = 0; i < usuario.Años.Count; i++) {
-                    for (int j = 0; j < usuario.Años[i].Meses.Count; j++) {
-                        for (int k = 0; k < usuario.Años[i].Meses[j].Dias.Count; k++) {
-                            for (int l = 0; l < usuario.Años[i].Meses[j].Dias[k].Jornadas.Count; l++) {
-                                ListaJornadas.Add(usuario.Años[i].Meses[j].Dias[k].Jornadas[l]);
+                usuarioActual = ListaUsuarios.Where(t => t.Gmail.Equals(gmail)).ToList()[0];
+                for (int i = 0; i < usuarioActual.Años.Count; i++) {
+                    for (int j = 0; j < usuarioActual.Años[i].Meses.Count; j++) {
+                        for (int k = 0; k < usuarioActual.Años[i].Meses[j].Dias.Count; k++) {
+                            for (int l = 0; l < usuarioActual.Años[i].Meses[j].Dias[k].Jornadas.Count; l++) {
+                                ListaJornadas.Add(usuarioActual.Años[i].Meses[j].Dias[k].Jornadas[l]);
                             }
                         }
                     }
@@ -37,15 +38,26 @@ namespace ProyectoProfesor.MVVM.ViewModel {
             });
         }
         public void CargarUsuario() {
-            ListaUsuarios = new ObservableCollection<Usuario>();
             conexion.GetCliente().Child("Usuario").AsObservable<Usuario>()
                         .Subscribe((user) => {
                             if (user.Object != null) {
-                                ListaUsuarios.Add(user.Object);
+                                if (ListaUsuarios.Any(t => t.Gmail.ToLower().Equals(user.Object.Gmail.ToLower()))) {
+                                    ListaUsuarios.Remove(ListaUsuarios.Where(t => t.Gmail.ToLower().Equals(user.Object.Gmail.ToLower())).ToList()[0]); ;
+                                    ListaUsuarios.Add(user.Object);
+                                } else {
+                                    ListaUsuarios.Add(user.Object);
+                                }
                             }
                         });
         }
 
-
+        public bool TieneJornadasElMes(Mes mes) {
+            for (int i=0;i< mes.Dias.Count;i++) {
+                if(mes.Dias[i].Jornadas.Count>0) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }
