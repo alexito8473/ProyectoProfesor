@@ -26,26 +26,26 @@
                             <Grid RowDefinitions="Auto" ColumnDefinitions="Auto" HorizontalOptions="CenterAndExpand" RowSpacing="20" >
                                 <Frame HorizontalOptions="CenterAndExpand" BorderColor="Transparent" BackgroundColor="Bisque" Grid.Column="0" Grid.Row="0" CornerRadius="27" >
                                     <VerticalStackLayout HorizontalOptions="CenterAndExpand">
-                                        <Image Source="{Binding Imagen}" HeightRequest="120"/>
+                                        <Image Source="{Binding Usuario.Imagen}" HeightRequest="120"/>
                                         <Frame BackgroundColor="Transparent" CornerRadius="20" BorderColor="Transparent" >
                                             <VerticalStackLayout>
                                                 <Label FontSize="18" TextColor="Black" Text="Nombre completo" HorizontalOptions="Center"/>
-                                                <Label TextColor="Black" HorizontalOptions="Center" Text="{Binding NombreCompleto}" />
+                                                <Label TextColor="Black" HorizontalOptions="Center" Text="{Binding Usuario.NombreCompleto}" />
                                                 <Label FontSize="18" TextColor="Black" Text="Gmail" HorizontalOptions="Center"/>
-                                                <Label TextColor="Black" HorizontalOptions="Center" Text="{Binding Gmail}"/>
-                                                <Label FontSize="18" TextColor="Black" Text="Gmail" HorizontalOptions="Center"/>
-                                                <Label TextColor="Black" HorizontalOptions="Center" Text="{Binding Gmail}"/>
+                                                <Label TextColor="Black" HorizontalOptions="Center" Text="{Binding Usuario.Gmail}"/>
+                                                <Label FontSize="18" TextColor="Black" Text="Horas trabajadas" HorizontalOptions="Center"/>
+                                                <Label TextColor="Black" HorizontalOptions="Center" Text="{Binding tiempoJornadas}"/>
                                             </VerticalStackLayout>
                                         </Frame>
-                                        <HorizontalStackLayout VerticalOptions="Center" Grid.Column="0" Grid.Row="0" HorizontalOptions="Center" Spacing="10" Margin="30,0">
+                                        <HorizontalStackLayout VerticalOptions="Center" Grid.Column="0" Grid.Row="0" HorizontalOptions="Center" Margin="10,0">
                                             <Button TextColor="Black" Text="Informacion alumno"
                                                     BackgroundColor="OrangeRed"
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type local:UsuarioViewModel}},Path=obtenerGmailAlumno}"
-                                                    CommandParameter="{Binding Gmail}"
+                                                    CommandParameter="{Binding Usuario.Gmail}"
                                                     Clicked="Button_Clicked_1"/>
                                             <Button TextColor="Black" Text="Convertir a pdf " 
                                                     Command="{Binding Source={RelativeSource AncestorType={x:Type local:UsuarioViewModel}},Path=obtenerGmailAlumno}"
-                                                    CommandParameter="{Binding Gmail}"
+                                                    CommandParameter="{Binding Usuario.Gmail}"
                                                     BackgroundColor="Orange"
                                                     Clicked="Button_Clicked"/>
                                         </HorizontalStackLayout>

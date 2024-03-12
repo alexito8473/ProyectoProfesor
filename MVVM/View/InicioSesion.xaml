@@ -34,12 +34,17 @@
                     </Frame>
                 </StackLayout>
                 <Button
-        x:Name="butInicioSesion"
-        Text="Iniciar sesión" 
+                    Text="Iniciar sesión" 
                     BackgroundColor="YellowGreen"
-        SemanticProperties.Hint="Counts the number of times you click"
-        HorizontalOptions="Fill" 
-                Clicked="butInicioSesion_ClickedAsync"/>
+                    SemanticProperties.Hint="Counts the number of times you click"
+                    HorizontalOptions="Fill" 
+                    Clicked="butInicioSesion_ClickedAsync"/>
+                <Button
+                    Text="Registrarse" 
+                    BackgroundColor="YellowGreen"
+                    SemanticProperties.Hint="Counts the number of times you click"
+                    HorizontalOptions="Fill" 
+                    Clicked="Button_Clicked"/>
             </VerticalStackLayout>
         </Frame>
     </ScrollView>

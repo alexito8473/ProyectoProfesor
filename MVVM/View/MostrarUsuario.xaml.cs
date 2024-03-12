@@ -1,32 +1,39 @@
-using Firebase.Storage;
 using iText.IO.Image;
 using iText.Kernel.Colors;
-using iText.Kernel.Font;
 using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Draw;
 using iText.Layout;
-using iText.Layout.Borders;
 using iText.Layout.Element;
 using ProyectoProfesor.MVVM.Model;
 using ProyectoProfesor.MVVM.ViewModel;
-using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ProyectoProfesor.MVVM.View;
-
-public partial class MostrarUsuario : ContentPage
-{
-	private UsuarioViewModel _viewModel;
-	public MostrarUsuario(UsuarioViewModel usuario)
-	{
+/// <summary> Clase vista donde tenemos la lógica del mostrarUsuario </summary>
+/// <remarks> Clase tendra los métodos crear el pdf, además las distinas navegaciones.</remarks>
+public partial class MostrarUsuario : ContentPage{
+    /// <summary> Atributo de la clase MostrarUsuario</summary>
+    /// <remarks> El atributo es el vide model de la clase.</remarks>
+    private UsuarioViewModel _viewModel;
+    /// <summary> Constructor de la clase MostrarUsuario</summary>
+    /// <remarks> Se instancia los componentes que tiene el programa. </remarks>
+    /// <param name="usuario">Modelo vista del usuario</param>
+    public MostrarUsuario(UsuarioViewModel usuario){
 		InitializeComponent();
         _viewModel = usuario;
         DisplayAlert("Correcto", "Recopilando los datos de los alumnos", "Vale");
         BindingContext = _viewModel;
 	}
-
+    /// <summary> Botón asyncrono de la clase MostrarUsuario</summary>
+    /// <remarks> Nos manda a la informacion del usuario </remarks>
+    /// <param name="e">Evento del método</param>
+    /// <param name="sender"> Objecto del método</param>
     private void Button_Clicked_1(object sender, EventArgs e) {
-        Navigation.PushAsync(new InformacionUsuario(_viewModel));
+        Navigation.PushAsync(new InformacionUsuario(_viewModel.usuarioActual.Usuario));
     }
+    /// <summary> Botón asyncrono de la clase MostrarUsuario</summary>
+    /// <remarks> Nos crea el pdf del usuario. </remarks>
+    /// <param name="e">Evento del método</param>
+    /// <param name="sender"> Objecto del método</param>
     private void Button_Clicked(object sender, EventArgs e) {
 		if (_viewModel.ListaJornadas.Count==0) {
             DisplayAlert("Información", "No tiene jornadas", "ok");
@@ -35,29 +42,30 @@ public partial class MostrarUsuario : ContentPage
             DisplayAlert("Información", "Se ha creado el pdf correctamente", "ok");
         }
     }
+    /// <summary> Botón asyncrono de la clase MostrarUsuario</summary>
+    /// <remarks> Nos crea el pdf del usuario. </remarks>
     private async void crearPDF2() {
-        string fileName = "Registro_" + _viewModel.usuarioActual.NombreCompleto + DateTime.Now.ToString("dd_MM_yyyy") + ".pdf";
+        string fileName = "Registro_" + _viewModel.usuarioActual.Usuario.NombreCompleto + DateTime.Now.ToString("dd_MM_yyyy") + ".pdf";
 
 #if ANDROID
         await Permissions.RequestAsync<Permissions.StorageWrite>();
-    var docsDirectory = Android.App.Application.Context.GetExternalFilesDir(Android.OS.Environment.DirectoryDocuments);
-    var filepath= Path.Combine(docsDirectory.AbsoluteFile.Path,fileName);
+        var filepath = "/sdcard/Download/"+fileName;
 #else
         var filepath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), fileName);
 #endif
         using (PdfWriter writer = new PdfWriter(filepath)) {
             List <Semana> semanas= new List<Semana>();
             Document document = new Document(new PdfDocument(writer));
-            for (int i = 0; i < _viewModel.usuarioActual.Años.Count; i++) {
-                for (int j = 0; j < _viewModel.usuarioActual.Años[i].Meses.Count; j++) {
-                    if (_viewModel.TieneJornadasElMes(_viewModel.usuarioActual.Años[i].Meses[j])) {// Tiene una jornada?
+            for (int i = 0; i < _viewModel.usuarioActual.Usuario.Años.Count; i++) {
+                for (int j = 0; j < _viewModel.usuarioActual.Usuario.Años[i].Meses.Count; j++) {
+                    if (_viewModel.TieneJornadasElMes(_viewModel.usuarioActual.Usuario.Años[i].Meses[j])) {// Tiene una jornada?
                         semanas = new List<Semana>();
-                        semanas = crearListaSemanas( _viewModel.usuarioActual.Años[i].Meses[j]);
+                        semanas = crearListaSemanas( _viewModel.usuarioActual.Usuario.Años[i].Meses[j]);
                         for (int k = 0; k < semanas.Count; k++) {
                             if (JornadaSemana(semanas[k])) {
-                                titular(document, _viewModel.usuarioActual.Años[i].fecha, _viewModel.usuarioActual.Años[i].Meses[j].Nombre, semanas[k]);
+                                await titularAsync(document, _viewModel.usuarioActual.Usuario.Años[i].fecha, _viewModel.usuarioActual.Usuario.Años[i].Meses[j].Nombre, semanas[k]);
                                 ContruirSemana(document, semanas[k]);
-                                Footer(document);
+                                await FooterAsync(document);
                                 document.Add(new AreaBreak());
                             }
                         }
@@ -67,7 +75,10 @@ public partial class MostrarUsuario : ContentPage
             document.Close();
         }
     }
-
+    /// <summary> Botón asyncrono de la clase MostrarUsuario</summary>
+    /// <remarks> Nos devuelve de un mes una lista de semanas. </remarks>
+    /// <param name="mes"> El mes de un año</param>
+    /// <returns> Devuelve la lista de semanas de un mes</returns>
     private List<Semana> crearListaSemanas( Mes mes) {
         List<Semana> semanas = new List<Semana>();
         List<Dia> dias= new List<Dia>(mes.Dias.OrderBy(t => t.DiaActual).ToList());
@@ -89,49 +100,57 @@ public partial class MostrarUsuario : ContentPage
         }
         return semanas;
     }
-    private void titular(Document document, string año, string mes, Semana semana) {
-        document.Add(new Paragraph("JUNTA DE ANDALUCIA\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tCONSEJERÍA DE EDUCACIÓN").SetTextAlignment(iText.Layout.Properties.TextAlignment.LEFT).SetFontSize(10));
-            document.Add(new Paragraph("FORMACION DE CENTRO DE TRABAJO. FICHA SEMANAL DEL ALUMNO/ALUMNA").SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER).SetFontSize(10));
-            Table tablaTitulo = new Table(1);
-            tablaTitulo.SetWidth(259).SetFontSize(10);
-            tablaTitulo.AddCell("Semana del "+ semana.DiaInicio+ " al "+ semana.DiaFin +" de " + semana.Mes + " 2024");
-            tablaTitulo.SetBorderBottom(iText.Layout.Borders.Border.NO_BORDER);
-            document.Add(tablaTitulo);
+    /// <summary> Botón asyncrono de la clase MostrarUsuario</summary>
+    /// <remarks> Nos devuelve de un mes una lista de semanas. </remarks>
+    /// <param name="document">El documento donde se trabaja</param>
+    /// <param name="semana">Semana donde se trabaja</param>
+    /// <param name="año">El año donde se trabaja</param>
+    /// <param name="mes">El mes donde se trabaja</param>
+    /// <returns> Nos devuelve un Task</returns>
+    private async Task titularAsync(Document document, string año, string mes, Semana semana) {
+        iText.Layout.Element.Image image = new iText.Layout.Element.Image(
+            ImageDataFactory.Create(await conversorAsync(Constante.Constante.HEADER)))
+            .SetHorizontalAlignment((iText.Layout.Properties.HorizontalAlignment?)HorizontalAlignment.Center).SetWidth(500);
+            document.Add(image);
             Table tablaTitulo2 = new Table(2);
+            tablaTitulo2.AddHeaderCell("Semana del "+ semana.DiaInicio+ " al "+ semana.DiaFin +" de " + semana.Mes + " 2024");
+            tablaTitulo2.AddHeaderCell(createCellNoBordes2(" "));
             tablaTitulo2.SetWidth(500).SetFontSize(10);
-            tablaTitulo2.AddHeaderCell("Centro docente:"+_viewModel.usuarioActual.CentroDocente+"\nProfesor/a responsable seguimiento:"+_viewModel.usuarioActual.ProfesorResponsable);
-            tablaTitulo2.AddHeaderCell("Centro de trabajo coloborador:"+ _viewModel.usuarioActual.CentroTrabajo + "\nTutor/a centro de trabajo:"+ _viewModel.usuarioActual.TutorTrabajo);
-            tablaTitulo2.AddHeaderCell("Alumno/a: "+ _viewModel.usuarioActual.NombreCompleto);
-            tablaTitulo2.AddHeaderCell("Ciclo formativo: "+ _viewModel.usuarioActual.CicloFormativo + "\t\t Grado:"+ _viewModel.usuarioActual.Grado);
+            tablaTitulo2.AddHeaderCell("Centro docente:"+_viewModel.usuarioActual.Usuario.CentroDocente+"\nProfesor/a responsable seguimiento:"+_viewModel.usuarioActual.Usuario.ProfesorResponsable);
+            tablaTitulo2.AddHeaderCell("Centro de trabajo coloborador:"+ _viewModel.usuarioActual.Usuario.CentroTrabajo + "\nTutor/a centro de trabajo:"+ _viewModel.usuarioActual.Usuario.TutorTrabajo);
+            tablaTitulo2.AddHeaderCell("Alumno/a: "+ _viewModel.usuarioActual.Usuario.NombreCompleto);
+            tablaTitulo2.AddHeaderCell("Ciclo formativo: "+ _viewModel.usuarioActual.Usuario.CicloFormativo + "\t\t Grado:"+ _viewModel.usuarioActual.Usuario.Grado);
             document.Add(tablaTitulo2);
     }
-    private void Footer(Document document) {
+    /// <summary> Método de la clase MostrarUsuario</summary>
+    /// <remarks> Nos añade un footer al documento </remarks>
+    /// <param name="document">El documento donde se trabaja<param>
+    /// <returns> Devuelve un task</returns>
+    private async Task FooterAsync(Document document) {
         document.Add(new Paragraph(""));
-        Table tablaTitulo = new Table(3);
-        tablaTitulo.SetWidth(330);
-        tablaTitulo.SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER);
-        tablaTitulo.SetHorizontalAlignment(iText.Layout.Properties.HorizontalAlignment.CENTER);
-        tablaTitulo.SetStrokeColor(ColorConstants.WHITE);
-        tablaTitulo.SetBackgroundColor(ColorConstants.WHITE);   
-        tablaTitulo.AddCell(createCellNoBordes("El/La alumno"));
-        tablaTitulo.AddCell(createCellNoBordes("VºB El/A PROFESOR/A RESPONSABLE DEL SEGUIMIENTO"));
-        tablaTitulo.AddCell(createCellNoBordes("VºB El/LA TUTOR DEL CENTRO DE TRABAJO"));
-        tablaTitulo.AddCell(createCellNoBordes2("Fdo:"));
-        tablaTitulo.AddCell(createCellNoBordes2("Fdo:"));
-        tablaTitulo.AddCell(createCellNoBordes2("Fdo:"));
-        document.Add(tablaTitulo);
+        iText.Layout.Element.Image image = new iText.Layout.Element.Image(
+            ImageDataFactory.Create(await conversorAsync(Constante.Constante.FOOTER)))
+            .SetHorizontalAlignment((iText.Layout.Properties.HorizontalAlignment?)HorizontalAlignment.Center).SetWidth(500);
+        document.Add(image);
     }
-    private async Task<byte[]> conversorAsync() {
+    /// <summary> Método de la clase MostrarUsuario</summary>
+    /// <remarks> Genera un arry de byte desde una imagen de firebase </remarks>
+    /// <param name="url">La url donde esta la imagen de firebase</param>
+    /// <returns> Devuelve un array de bytes</returns>
+    private async Task<byte[]> conversorAsync(string url) {
         byte[] imageData;
         using (HttpClient client = new HttpClient()) {
-            imageData = await client.GetByteArrayAsync(_viewModel.usuarioActual.Imagen);
+            imageData = await client.GetByteArrayAsync(url);
         }
         // Guardar la imagen descargada en un archivo local temporal
         string rutaImagenLocal = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "imagen_temporal.jpg");
         File.WriteAllBytes(rutaImagenLocal, imageData);
         return imageData;
     }
-
+    /// <summary> Método de la clase MostrarUsuario</summary>
+    /// <remarks> Nos contruye el formulario  </remarks>
+    /// <param name="semana">La semana que se trabaja</param>
+    /// <param name="document">El docuemento de que se trabaja</param>
     private void ContruirSemana(Document document, Semana semana) {
         Table table = new Table(4);
         table.SetWidth(470);
@@ -152,7 +171,10 @@ public partial class MostrarUsuario : ContentPage
         }
         document.Add(table);
     }
-
+    /// <summary> Botón asyncrono de la clase MostrarUsuario</summary>
+    /// <remarks> Crea de un formulario la semana del pdf </remarks>
+    /// <param name="semana">Una semana</param>
+    /// <returns> true:Si la semana tiene jornadas false:No tiene jornadas</returns>
     private bool JornadaSemana(Semana semana) {
         bool salida = false;
         for (int i = 0; i < semana.Dias.Count&& !salida; i++) {
@@ -162,6 +184,11 @@ public partial class MostrarUsuario : ContentPage
         }
         return salida;
     }
+    /// <summary> Método asyncrono de la clase MostrarUsuario</summary>
+    /// <remarks> Nos crea una celda </remarks>
+    /// <param name="isHeader">Si es un encabezado o no</param>
+    /// <param name="text">Que texto contiene</param>
+    /// <returns> Te devuelve una celda</returns>
     private iText.Layout.Element.Cell CreateCell(string text, bool isHeader) {
         iText.Layout.Element.Cell cell = new iText.Layout.Element.Cell();
         cell.Add(new Paragraph(text));
@@ -180,13 +207,10 @@ public partial class MostrarUsuario : ContentPage
         cell.SetPadding(10);
         return cell;
     }
-    private static iText.Layout.Element.Cell createCellNoBordes(string content) {
-        iText.Layout.Element.Cell cell = new iText.Layout.Element.Cell();
-        cell.Add(new Paragraph(content));
-        cell.SetFontSize(8);
-        cell.SetBorder(iText.Layout.Borders.Border.NO_BORDER); // Quitar el borde de la celda
-        return cell;
-    }
+    /// <summary> Método asyncrono de la clase MostrarUsuario</summary>
+    /// <remarks> Nos crea una celda, pero sin bordes</remarks>
+    /// <param name="content">Texto para la celdaparam>
+    /// <returns> Te devuelve una celda</returns>
     private static iText.Layout.Element.Cell createCellNoBordes2(string content) {
         iText.Layout.Element.Cell cell = new iText.Layout.Element.Cell();
         cell.Add(new Paragraph(content));
@@ -195,12 +219,4 @@ public partial class MostrarUsuario : ContentPage
         cell.SetBorder(iText.Layout.Borders.Border.NO_BORDER); // Quitar el borde de la celda
         return cell;
     }
-    private async Task<byte[]>  convertirImagen(string name) {
-        using var ms= new MemoryStream();
-        using (var steam= await FileSystem.OpenAppPackageFileAsync(name))
-            await steam.CopyToAsync(ms);
-        return ms.ToArray();
-    }
-
-
 }
